@@ -4,14 +4,6 @@ def helpinfo():
     print('scanner.py -c <connectmode> -r <runmode> -t <timeout> -ip <ip> -p <port> -if <ipfile> -pf <portfile>')
 
 def main():
-    connectmode = ''  # -c 连接模式 tcp(即普通的connect)/syn
-    runmode = ''    # -r 运行模式 tcp时需要选择 t/c 多线程/协程
-    threadnum = '' # -tn 选择多线程时 需要输入线程数
-    timeout = ''    # -t 连接超时 单位秒
-    ip = ''     #-i ip地址 可以单个IP 或者IP范围
-    port = ''   #-p 端口范围 21,22,23 或者 1-500，900-1500 可多个逗号隔开
-    ipfile = ''   #-if ip地址文件
-    portfile = '' #-pf 端口文件
     parser = argparse.ArgumentParser(description='lkScanner')
 
     parser.add_argument('-c',choices = ['tcp', 'syn'],help = '连接模式 tcp(即普通的connect)/syn 默认值:syn', type=str, default='syn')
@@ -22,6 +14,7 @@ def main():
     parser.add_argument('-p', choices = [],help = '端口范围 21,22,23 或者 1-500,900-1500 多个可逗号隔开', type=str,default=None)
     parser.add_argument('-if',choices = [], help = 'ip地址文件 每行一个', type=str, default=None)
     parser.add_argument('-pf',choices = [], help = '端口文件 端口范围 21,22,23 或者 1-500,900-1500 多个可逗号隔开', type=str, default=None)
+
     args = parser.parse_args()
 
 
