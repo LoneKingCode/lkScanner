@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c8f38e07-2cc2-4434-a9d0-2126c971fb03</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>lkScanner.py</StartupFile>
+    <StartupFile>scanner.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,7 +21,31 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="lkScanner.py" />
+    <Compile Include="scanner\listen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner\scanbya.py" />
+    <Compile Include="scanner\scan.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner\scanthread.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner\coroutine_scanner.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner\multithread_scanner.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="record.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="scanner\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
