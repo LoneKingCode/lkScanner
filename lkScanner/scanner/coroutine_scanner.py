@@ -3,6 +3,7 @@ monkey.patch_socket()
 import time
 import socket
 import IPy
+import sys
 from scannerparam import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
@@ -17,7 +18,7 @@ class CoroutineScanner(object):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, port))
-            str = print('{0}:{1}'.format(ip,port))
+            str = '{0}:{1}\n'.format(ip,port)
             FileHelper.append(RESULT_PATH,str)
             s.close()
         except socket.timeout as e:
@@ -33,8 +34,8 @@ class CoroutineScanner(object):
         except Exception as e:
             s.close()
         self.scancount = self.scancount + 1
-        print("已扫描{0} 剩余 {1}\n".format(self.scancount, self.taskcount - self.scancount))
-
+        sys.stdout.write('\r' + '已扫描:{0},剩余{1}'.format(self.scancount, self.taskcount - self.scancount))
+        sys.stdout.flush()
 
     def run(self,scannerparam):
         socket.setdefaulttimeout(scannerparam.timeout)
@@ -48,8 +49,10 @@ class CoroutineScanner(object):
         for ip in iplist:
             for port in portlist:
                 params.append({'ip':ip,'port':port})
+
         self.taskcount = len(params)
         print('线程数:{0},ip总数:{1},待扫描任务总数:{2}'.format(scannerparam.threadnum, len(iplist),self.taskcount))
+
         for p in params:
             _pool.spawn(self.scan,p)
         time_end = time.time()
@@ -59,6 +62,6 @@ class CoroutineScanner(object):
 
 
 if __name__ == "__main__":
-    scannerparam = ScannerParam('tcp','c',512,100,'176.31.0.0/16','80,3306,1433','','')
+    scannerparam = ScannerParam('tcp','c',500,10,'176.31.180.38,61.135.0.0/16','80,3306,1433','','')
     c_scanner = CoroutineScanner()
     c_scanner.run(scannerparam)

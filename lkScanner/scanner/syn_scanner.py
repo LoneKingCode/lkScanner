@@ -5,7 +5,7 @@ import netaddr
 from scannerparam import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
-
+import sys
 
 RESULT_PATH = FileHelper.get_save_path()
 class SynScanner(object):
@@ -13,11 +13,13 @@ class SynScanner(object):
         self.ifacestr = "Intel(R) Dual Band Wireless-AC 3160"
         self.sendcount = 0
     def prn(self,pkt):
-        print(pkt.sprintf("%IP.src%:%IP.sport%  %TCP.flags%"))
-        str = pkt.sprintf("%IP.src%:%IP.sport%\n")
-        FileHelper.append(RESULT_PATH,str)
-        #self.open_ports.add({'ip':ip,'port':port})
-    def listen(self):
+        ipinfo = pkt.sprintf("%IP.src%:%IP.sport%\n")
+        port = int(pkt.sprintf('%IP.sport%'))
+        if port in self.portlist:
+            FileHelper.append(RESULT_PATH,ipinfo)
+            #self.open_ports.add({'ip':ip,'port':port})
+    def listen(self,portlist):
+        self.portlist = portlist
         #sniff(filter='tcp and dst %s and tcp[13:1] & 18==18'%userIP, prn=prn)
         #至于tcp[13:1] & 18==18是怎么来的，因为在syn扫描中，我们向目标端口发送SYN，
         #如果它开放的话会回复SYN＋ACK，也就是SYN ACK位均为1，在上面tcp首部的图中，ACK为高位，
@@ -31,17 +33,18 @@ class SynScanner(object):
         port = param['port']
         send(IP(dst=ip) / TCP(dport=port, flags=2), verbose=False)
         self.sendcount = self.sendcount + 1
-        print('send count:{0}'.format(self.sendcount))
+        sys.stdout.write('\r' + '已扫描:{0},剩余{1}'.format(self.sendcount, self.taskcount - self.sendcount))
+        sys.stdout.flush()
     def run(self,scannerparam):
         time_start = time.time()
         print('开始执行...')
 
-        p_listen = Process(target=self.listen)
-        p_listen.start()
-
         params = []
         iplist = IpHelper.get_ip_list(scannerparam)
         portlist = PortHelper.get_port_list(scannerparam)
+
+        p_listen = Process(target=self.listen,args=(portlist,))
+        p_listen.start()
 
         for ip in iplist:
             for port in portlist:
@@ -56,7 +59,7 @@ class SynScanner(object):
             results = executor.map(self.send,params)
 
         time_end = time.time()
-        print('发送数据包结束，共花费{0}秒'.format(time_end - time_start))
+        print('\n发送数据包结束，共花费{0}秒'.format(time_end - time_start))
         #for x in self.open_ports:
         #    print("{0}:{1} open \n".format(x['ip'],x['port']))
 
@@ -68,6 +71,6 @@ class SynScanner(object):
 
 
 if __name__ == "__main__":
-    scannerparam = ScannerParam('syn','c',512,100,'176.31.0.0/16','80,3306,1433','','')
+    scannerparam = ScannerParam('syn','c',512,100,'176.31.0.0/18','3306,5402,5403,1433','','')
     syn_scanner = SynScanner()
     syn_scanner.run(scannerparam)

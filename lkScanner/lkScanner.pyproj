@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c8f38e07-2cc2-4434-a9d0-2126c971fb03</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>scanner\syn_scanner.py</StartupFile>
+    <StartupFile>scanner\thread_scanner.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -49,6 +49,7 @@
     <Content Include="data\port.txt" />
     <Content Include="data\result.txt" />
     <Content Include="record.txt" />
+    <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
