@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c8f38e07-2cc2-4434-a9d0-2126c971fb03</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>scanner.py</StartupFile>
+    <StartupFile>scanner\syn_scanner.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,30 +21,38 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="scanner\listen.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="scanner.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="scanner\scanbya.py" />
-    <Compile Include="scanner\scan.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="scanner\scanthread.py">
+    <Compile Include="scanner\scannerparam.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scanner\coroutine_scanner.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="scanner\multithread_scanner.py">
+    <Compile Include="scanner\thread_scanner.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="scanner\syn_scanner.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="util\filehelper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="util\nethelper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="util\sqlhelper.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\ip.txt" />
+    <Content Include="data\port.txt" />
+    <Content Include="data\result.txt" />
     <Content Include="record.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="data\" />
+    <Folder Include="util\" />
     <Folder Include="scanner\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
