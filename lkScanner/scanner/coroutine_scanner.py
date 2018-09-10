@@ -1,10 +1,10 @@
 from gevent import monkey,pool
-monkey.patch_socket()
+monkey.patch_all()
 import time
 import socket
 import IPy
 import sys
-from scannerparam import ScannerParam
+from scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 
@@ -62,6 +62,6 @@ class CoroutineScanner(object):
 
 
 if __name__ == "__main__":
-    scannerparam = ScannerParam('tcp','c',500,10,'176.31.180.38,61.135.0.0/16','80,3306,1433','','')
+    scannerparam = ScannerParam('tcp','c',1000,5,'176.31.0.0/16','3389','','')
     c_scanner = CoroutineScanner()
     c_scanner.run(scannerparam)

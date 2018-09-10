@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c8f38e07-2cc2-4434-a9d0-2126c971fb03</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>scanner\thread_scanner.py</StartupFile>
+    <StartupFile>scanner\syn_scanner.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,7 +24,7 @@
     <Compile Include="scanner.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="scanner\scannerparam.py">
+    <Compile Include="scanner\scanner_param.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scanner\coroutine_scanner.py">
@@ -43,6 +43,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="util\sqlhelper.py" />
+    <Compile Include="validator\ftp_validator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="validator\mssql_validator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="validator\mysql_validator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="validator\proxy_validator.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\ip.txt" />
@@ -53,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
+    <Folder Include="D:\MyProject\LoneKingCode\python\lkScanner\lkScanner\validator\" />
     <Folder Include="util\" />
     <Folder Include="scanner\" />
   </ItemGroup>

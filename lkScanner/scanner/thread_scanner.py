@@ -4,14 +4,15 @@ import socket
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from scannerparam import ScannerParam
+from scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 
 RESULT_PATH = FileHelper.get_save_path()
 class ThreadScanner(object):
-    def __init__(self):
+    def __init__(self,lock):
         self.scancount = 0
+        self.lock = lock
     def scan(self,param):
         ip = param['ip']
         port = param['port']
@@ -20,7 +21,9 @@ class ThreadScanner(object):
             s.connect((ip, port))
             #print('{0}:{1} open'.format(ip,port))
             ipinfo = '{0}:{1}\n'.format(ip,port)
+            self.lock.acquire()
             FileHelper.append(RESULT_PATH,ipinfo)
+            self.lock.release()
             s.close()
         except socket.timeout as e:
             s.close()
@@ -61,6 +64,7 @@ class ThreadScanner(object):
             print("{0}:{1} open \n".format(x['ip'],x['port']))
 
 if __name__ == '__main__':
-    scannerparam = ScannerParam('tcp','c',500,10,'176.31.180.38,61.135.0.0/16','80','','')
-    t_scanner = ThreadScanner()
+    lock = threading.Lock()
+    scannerparam = ScannerParam('tcp','t',1000,5,'176.31.0.0/16','3389','','')
+    t_scanner = ThreadScanner(lock)
     t_scanner.run(scannerparam)

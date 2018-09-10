@@ -2,22 +2,28 @@ from multiprocessing import Process, Queue
 from concurrent.futures import ThreadPoolExecutor
 from scapy.all import *
 import netaddr
-from scannerparam import ScannerParam
+from scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 import sys
+import time
 
 RESULT_PATH = FileHelper.get_save_path()
 class SynScanner(object):
-    def __init__(self):
+    def __init__(self,lock):
         self.ifacestr = "Intel(R) Dual Band Wireless-AC 3160"
         self.sendcount = 0
+        self.lock = lock
+
     def prn(self,pkt):
         ipinfo = pkt.sprintf("%IP.src%:%IP.sport%\n")
         port = int(pkt.sprintf('%IP.sport%'))
         if port in self.portlist:
+            self.lock.acquire()
             FileHelper.append(RESULT_PATH,ipinfo)
+            self.lock.release()
             #self.open_ports.add({'ip':ip,'port':port})
+
     def listen(self,portlist):
         self.portlist = portlist
         #sniff(filter='tcp and dst %s and tcp[13:1] & 18==18'%userIP, prn=prn)
@@ -28,13 +34,18 @@ class SynScanner(object):
         #也就是上面图中flags所在的字节，这样用其值与18与一下，就过滤掉了别的包。
         sniff(filter="tcp[13:1] & 18==18", prn=self.prn,iface=self.ifacestr)
 
+
     def send(self,param):
         ip = param['ip']
         port = param['port']
         send(IP(dst=ip) / TCP(dport=port, flags=2), verbose=False)
+
         self.sendcount = self.sendcount + 1
+
         sys.stdout.write('\r' + '已扫描:{0},剩余{1}'.format(self.sendcount, self.taskcount - self.sendcount))
         sys.stdout.flush()
+
+
     def run(self,scannerparam):
         time_start = time.time()
         print('开始执行...')
@@ -51,10 +62,7 @@ class SynScanner(object):
                 params.append({'ip':ip,'port':port})
         self.taskcount = len(params)
         print('ip总数:{0},待扫描任务总数:{1}'.format(len(iplist),self.taskcount))
-
-        #for p in params:
-        #    self.send(p)
-
+ 
         with ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
             results = executor.map(self.send,params)
 
@@ -70,7 +78,8 @@ class SynScanner(object):
         p_listen.join()
 
 
-if __name__ == "__main__":
-    scannerparam = ScannerParam('syn','c',512,100,'176.31.0.0/18','3306,5402,5403,1433','','')
-    syn_scanner = SynScanner()
+if __name__ == "__main__":   
+    scannerparam = ScannerParam('syn','c',100,5,'176.31.0.0/16','3389','','')
+    lock = threading.Lock()
+    syn_scanner = SynScanner(lock)
     syn_scanner.run(scannerparam)
