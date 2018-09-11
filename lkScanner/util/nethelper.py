@@ -1,7 +1,15 @@
 import IPy
+import config
+import requests
+import json
 from scanner.scanner_param import ScannerParam
 
 class IpHelper(object):
+    @staticmethod
+    def get_client_ip():
+        response = requests.get(config.TEST_IP, timeout=config.TIMEOUT)
+        content = json.loads(response.text)
+        return content['origin']
     @staticmethod
     def net_check(ip):
         return True

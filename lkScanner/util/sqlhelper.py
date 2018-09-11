@@ -1,5 +1,4 @@
 # coding:utf-8
-
 from sqlalchemy import Column, String, DateTime,Integer,VARCHAR,create_engine,MetaData,Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -9,11 +8,12 @@ import json
 
 BaseModel = declarative_base()
 
-class ProxyMain(BaseModel):
+class Scanner(BaseModel):
     __tablename__ = 'Scanner'
     id = Column(Integer, primary_key=True, autoincrement=True)
     ip = Column(String(15))
     port = Column(Integer,nullable=False)
+    flag = Column(String(30)) #这个作用标识每次扫描的结果
     createdatetime = Column(DateTime(), default=datetime.datetime.utcnow)
 
 
@@ -27,7 +27,7 @@ engine = create_engine('sqlite:///' + DATABASE_PATH, echo=False, connect_args={'
 DBSession = sessionmaker(bind=engine)
 
 class SqlHelper(object):
-    params = {'ip': ProxyMain.ip, 'port': ProxyMain.port}
+    params = {'ip': Scanner.ip, 'port': Scanner.port,'flag':Scanner.flag}
     @staticmethod
     def create_db():
         BaseModel.metadata.create_all(engine)
@@ -44,11 +44,10 @@ class SqlHelper(object):
 
     @staticmethod
     def deduplication():
-         #SqlHelper.execute('delete from Proxy_Main where (Proxy_Main.ip,Proxy_Main.port) in (select ip,port from Proxy_Main group by ip,port having count(*) > 1) and rowid not in (select min(rowid) from Proxy_Main group by ip,port having count(*)>1)')
         SqlHelper.execute('DELETE FROM Scanner \
 WHERE rowid IN \
    (SELECT p.rowid \
-    FROM Proxy_Main p \
+    FROM Scanner p \
     INNER JOIN \
          (SELECT ip, port, MIN(rowid) As min_id \
           FROM Proxy_Main \
@@ -64,13 +63,13 @@ WHERE rowid IN \
         else:
             result = conn.execute(sql).fetchmany(count)
         conn.close()
-        fields=[]
-        for field in ProxyMain.__dict__:
+        fields = []
+        for field in Scanner.__dict__:
             if '_' not in field:
                 fields.append(field)
         dict_result = []
         for row in result:
-            temp={}
+            temp = {}
             #例如 ('id',3)
             for column in row.items():
                 if(column[0] in SqlHelper.params.keys()):
@@ -81,8 +80,7 @@ WHERE rowid IN \
     @staticmethod
     def add(model):
         session = DBSession()
-        new_model = ProxyMain(ip=model["ip"],port=model["port"],speed=model["speed"],type=model["type"],\
-            protocol=model["protocol"],country=model["country"],area=model["area"])
+        new_model = Scanner(ip=model["ip"],port=model["port"],flag=model["flag"],createdatetime=model["createdatetime"])
         row_affect = session.add(new_model)
         session.commit()
         return row_affect
@@ -95,7 +93,7 @@ WHERE rowid IN \
             for key in list(conditions.keys()):
                 if(SqlHelper.params.get(key,None)):
                     conditionlist.append(SqlHelper.params.get(key) == conditions.get(key))
-        query = session.query(ProxyMain).order_by(ProxyMain.score.desc())
+        query = session.query(Scanner).order_by(Scanner.score.desc())
         for c in conditionlist:
             query = query.filter(c)
         if count:
@@ -110,7 +108,7 @@ WHERE rowid IN \
         for key in list(conditions.keys()):
             if(SqlHelper.params.get(key,None)):
                 conditionlist.append(SqlHelper.params.get(key) == conditions.get(key))
-        query = session.query(ProxyMain)
+        query = session.query(Scanner)
         for c in conditionlist:
             query = query.filter(c)
         updatevalue = {}
@@ -128,7 +126,7 @@ WHERE rowid IN \
         for key in list(conditions.keys()):
             if(SqlHelper.params.get(key,None)):
                 conditionlist.append(SqlHelper.params.get(key) == conditions.get(key))
-        query = session.query(ProxyMain)
+        query = session.query(Scanner)
         for c in conditionlist:
             query = query.filter(c)
         row_affect = query.delete()
@@ -137,5 +135,5 @@ WHERE rowid IN \
 
 
 if __name__ == '__main__':
-    query = SqlHelper.query('select * from Proxy_Main order by Score',3)
+    query = SqlHelper.query('select * from Scanner order by createdatetime',3)
     print(query)

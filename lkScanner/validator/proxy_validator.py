@@ -3,10 +3,14 @@ import time
 import requests
 from datetime import datetime
 import config
+from util.sqlhelper import SqlHelper
 
 class ProxyValidator(object):
-    @staticmethod
-    def proxy_valid(ip,port,proxy=None):
+    def __init__(self,data_flag):
+        self.data_flag = data_flag
+    def run(self):
+        pass
+    def proxy_valid(self,ip,port,proxy=None):
         proxies = {"http": "http://%s:%s" % (ip, port), "https": "https://%s:%s" % (ip, port)}
         flag,type,speed = Validator.check_proxy(proxies)
         _flag,_type,_speed = Validator.check_proxy(proxies,False)
@@ -27,8 +31,7 @@ class ProxyValidator(object):
             proxy.speed = int((speed + _speed) / 2)
         return flag or _flag
 
-    @staticmethod
-    def check_proxy(proxies,is_http=True):
+    def check_proxy(self,proxies,is_http=True):
         if is_http:
             test_url = config.TEST_HTTP_HEADER
         else:
@@ -61,11 +64,6 @@ class ProxyValidator(object):
 
         except Exception as e:
             return False,type,speed
-    @staticmethod
-    def get_client_ip():
-        response = requests.get(config.TEST_IP, timeout=config.TIMEOUT)
-        content = json.loads(response.text)
-        return content['origin']
 
 if __name__ == '__main__':
     ip = '116.62.194.248'

@@ -5,9 +5,10 @@ import netaddr
 from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
+from util.sqlhelper import SqlHelper
 import sys
 import time
-
+import datetime
 lock = threading.Lock()
 class SynScanner(object):
     def __init__(self,scannerparam):
@@ -15,14 +16,18 @@ class SynScanner(object):
         self.sendcount = 0
         self.scannerparam = scannerparam
         self.savepath =  FileHelper.get_save_path()
+        self.data_flag = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         if scannerparam.save:
             self.savepath = scannerparam.save
     def prn(self,pkt):
         ipinfo = pkt.sprintf("%IP.src%:%IP.sport%\n")
+        ip = pkt.sprintf('%IP.src%')
         port = int(pkt.sprintf('%IP.sport%'))
         if port in self.portlist:
             lock.acquire()
             FileHelper.append(self.savepath,ipinfo)
+            model = dict(ip=ip,port=port,flag=self.data_flag,createdatetime= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            SqlHelper.add(model)
             lock.release()
             #self.open_ports.add({'ip':ip,'port':port})
 
@@ -79,7 +84,17 @@ class SynScanner(object):
         time.sleep(20)
         print('执行结束')
         p_listen.terminate()
-        p_listen.join()
+
+        if scannerparam.func:
+            print('开始执行{0}'.format(scannerparam.func))
+            validate(scannerparam)
+
+    def validate(self,scannerparam):
+        if 'proxy' in scannerparam.func:
+            proxy_validator = ProxyValidator(self.data_flag)
+            p_proxy = Process(target=proxy_validator.run)
+            p_proxy.start()
+            p_proxy.join()
 
 
 def run_syn_scanner(scannerparam):

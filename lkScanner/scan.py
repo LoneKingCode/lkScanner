@@ -4,7 +4,9 @@ import threading
 from multiprocessing import Process
 from scanner import syn_scanner,thread_scanner
 from scanner.scanner_param import ScannerParam
+from util.sqlhelper import SqlHelper
 def main():
+    SqlHelper.create_db()
     parser = argparse.ArgumentParser(description='lkScanner')
 
     parser.add_argument('-c',choices = ['tcp', 'syn'],help = '连接模式 tcp(即普通的connect)/syn 默认值:syn', type=str, default='tcp')
@@ -16,6 +18,7 @@ def main():
     parser.add_argument('-ifile', help = 'ip地址范围文件 每行一个，多个可逗号隔开 默认值:data/port.txt', type=str, default='data/ip.txt')
     parser.add_argument('-pfile', help = '端口范围文件一行或多行 21,22,23 或者 1-500,900-1500 多个可逗号隔开 默认值:data/port.txt', type=str, default='data/port.txt')
     parser.add_argument('-save', help = '保存位置 例如 result.txt or /result.txt or 完整路径', type=str, default=None)
+    parser.add_argument('-func', help = '功能 proxy/mysql/mssql/ftp 验证 字典在data下', type=str, default=None)
 
     args = parser.parse_args()
     scannerparam = ScannerParam(args.c,args.r,args.tn,args.t,args.ip,args.p,args.ifile,args.pfile,args.save)
