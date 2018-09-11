@@ -1,5 +1,5 @@
 import IPy
-from scannerparam import ScannerParam
+from scanner.scanner_param import ScannerParam
 
 class IpHelper(object):
     @staticmethod
@@ -12,7 +12,7 @@ class IpHelper(object):
         if scannerparam.ip:
            iplist.extend(IpHelper.get_list(scannerparam.ip,parse_ip_segment))
         if scannerparam.ipfile:
-            iplist.extend(IpHelper.get_list_by_file(ipfile,parse_ip_segment))
+            iplist.extend(IpHelper.get_list_by_file(scannerparam.ipfile,parse_ip_segment))
         return iplist
 
     #获取ip列表 例如传入192.168.0.0/16

@@ -4,15 +4,18 @@ import socket
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from scanner_param import ScannerParam
+from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 
-RESULT_PATH = FileHelper.get_save_path()
+lock = threading.Lock()
 class ThreadScanner(object):
-    def __init__(self,lock):
+    def __init__(self,scannerparam):
         self.scancount = 0
-        self.lock = lock
+        self.scannerparam = scannerparam
+        self.savepath =  FileHelper.get_save_path()
+        if scannerparam.save:
+            self.savepath = scannerparam.save
     def scan(self,param):
         ip = param['ip']
         port = param['port']
@@ -21,9 +24,9 @@ class ThreadScanner(object):
             s.connect((ip, port))
             #print('{0}:{1} open'.format(ip,port))
             ipinfo = '{0}:{1}\n'.format(ip,port)
-            self.lock.acquire()
-            FileHelper.append(RESULT_PATH,ipinfo)
-            self.lock.release()
+            lock.acquire()
+            FileHelper.append(self.savepath,ipinfo)
+            lock.release()
             s.close()
         except socket.timeout as e:
             s.close()
@@ -41,7 +44,9 @@ class ThreadScanner(object):
         sys.stdout.write('\r' + '已扫描:{0},剩余{1}'.format(self.scancount, self.taskcount - self.scancount))
         sys.stdout.flush()
 
-    def run(self,scannerparam):
+    def run(self):
+        scannerparam = self.scannerparam
+
         socket.setdefaulttimeout(scannerparam.timeout)
         time_start = time.time()
         print('开始执行...')
@@ -63,8 +68,6 @@ class ThreadScanner(object):
         for x in self.open_ports:
             print("{0}:{1} open \n".format(x['ip'],x['port']))
 
-if __name__ == '__main__':
-    lock = threading.Lock()
-    scannerparam = ScannerParam('tcp','t',1000,5,'176.31.0.0/16','3389','','')
-    t_scanner = ThreadScanner(lock)
-    t_scanner.run(scannerparam)
+def run_thread_scanner(scannerparam):
+    t_scanner = ThreadScanner(scannerparam)
+    t_scanner.run()

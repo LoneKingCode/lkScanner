@@ -2,26 +2,28 @@ from multiprocessing import Process, Queue
 from concurrent.futures import ThreadPoolExecutor
 from scapy.all import *
 import netaddr
-from scanner_param import ScannerParam
+from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 import sys
 import time
 
-RESULT_PATH = FileHelper.get_save_path()
+lock = threading.Lock()
 class SynScanner(object):
-    def __init__(self,lock):
-        self.ifacestr = "Intel(R) Dual Band Wireless-AC 3160"
+    def __init__(self,scannerparam):
+        #self.ifacestr = "Intel(R) Dual Band Wireless-AC 3160"
         self.sendcount = 0
-        self.lock = lock
-
+        self.scannerparam = scannerparam
+        self.savepath =  FileHelper.get_save_path()
+        if scannerparam.save:
+            self.savepath = scannerparam.save
     def prn(self,pkt):
         ipinfo = pkt.sprintf("%IP.src%:%IP.sport%\n")
         port = int(pkt.sprintf('%IP.sport%'))
         if port in self.portlist:
-            self.lock.acquire()
-            FileHelper.append(RESULT_PATH,ipinfo)
-            self.lock.release()
+            lock.acquire()
+            FileHelper.append(self.savepath,ipinfo)
+            lock.release()
             #self.open_ports.add({'ip':ip,'port':port})
 
     def listen(self,portlist):
@@ -32,7 +34,7 @@ class SynScanner(object):
         #SYN为低位，2(SYN) + 16(ACK) = 18。
         #此外tcp[13:1]是tcpdump里的一个高级语法，意为取tcp数据包的下标为13的字节(也就是第14个字节)开始的1个字节，
         #也就是上面图中flags所在的字节，这样用其值与18与一下，就过滤掉了别的包。
-        sniff(filter="tcp[13:1] & 18==18", prn=self.prn,iface=self.ifacestr)
+        sniff(filter="tcp[13:1] & 18==18", prn=self.prn) #iface=self.ifacestr
 
 
     def send(self,param):
@@ -46,10 +48,12 @@ class SynScanner(object):
         sys.stdout.flush()
 
 
-    def run(self,scannerparam):
+    def run(self):
         time_start = time.time()
         print('开始执行...')
-
+        scannerparam = self.scannerparam
+        if scannerparam.save:
+            RESULT_PATH = scannerparam.save
         params = []
         iplist = IpHelper.get_ip_list(scannerparam)
         portlist = PortHelper.get_port_list(scannerparam)
@@ -62,7 +66,7 @@ class SynScanner(object):
                 params.append({'ip':ip,'port':port})
         self.taskcount = len(params)
         print('ip总数:{0},待扫描任务总数:{1}'.format(len(iplist),self.taskcount))
- 
+
         with ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
             results = executor.map(self.send,params)
 
@@ -78,8 +82,6 @@ class SynScanner(object):
         p_listen.join()
 
 
-if __name__ == "__main__":   
-    scannerparam = ScannerParam('syn','c',100,5,'176.31.0.0/16','3389','','')
-    lock = threading.Lock()
-    syn_scanner = SynScanner(lock)
-    syn_scanner.run(scannerparam)
+def run_syn_scanner(scannerparam):
+    syn_scanner = SynScanner(scannerparam)
+    syn_scanner.run()

@@ -1,5 +1,5 @@
 class ScannerParam(object):
-    def __init__(self,c,r,tn,t,ip,p,ifile,pfile):
+    def __init__(self,c,r,tn,t,ip,p,ifile,pfile,save):
         self.connectmode = c
         self.runmode = r
         self.threadnum = tn
@@ -8,5 +8,6 @@ class ScannerParam(object):
         self.port = p
         self.ipfile = ifile
         self.portfile = pfile
+        self.save = save
 
 

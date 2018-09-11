@@ -4,14 +4,18 @@ import time
 import socket
 import IPy
 import sys
-from scanner_param import ScannerParam
+from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 
-RESULT_PATH = FileHelper.get_save_path()
+
 class CoroutineScanner(object):
-    def __init__(self):
+    def __init__(self,scannerparam):
         self.scancount = 0
+        self.scannerparam = scannerparam
+        self.savepath = FileHelper.get_save_path()
+        if scannerparam.save:
+            self.savepath = scannerparam.save
     def scan(self,param):
         ip = param['ip']
         port = param['port']
@@ -37,7 +41,8 @@ class CoroutineScanner(object):
         sys.stdout.write('\r' + '已扫描:{0},剩余{1}'.format(self.scancount, self.taskcount - self.scancount))
         sys.stdout.flush()
 
-    def run(self,scannerparam):
+    def run(self):
+        scannerparam = self.scannerparam
         socket.setdefaulttimeout(scannerparam.timeout)
         _pool = pool.Pool(scannerparam.threadnum)
         time_start = time.time()
@@ -61,7 +66,6 @@ class CoroutineScanner(object):
             print("{0}:{1} open \n".format(x['ip'],x['port']))
 
 
-if __name__ == "__main__":
-    scannerparam = ScannerParam('tcp','c',1000,5,'176.31.0.0/16','3389','','')
-    c_scanner = CoroutineScanner()
-    c_scanner.run(scannerparam)
+def run_coroutine_scanner(scannerparam):
+    c_scanner = CoroutineScanner(scannerparam)
+    c_scanner.run()
