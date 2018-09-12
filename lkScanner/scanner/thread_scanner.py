@@ -3,7 +3,7 @@ import time
 import socket
 import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
 from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
@@ -61,8 +61,22 @@ class ThreadScanner(object):
         self.taskcount = len(params)
         print('线程数:{0},ip总数:{1},待扫描任务总数:{2}'.format(scannerparam.threadnum, len(iplist),self.taskcount))
 
-        with ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
-            results = executor.map(self.scan,params)
+        with futures.ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
+            param_left = len(params)
+            param_iter = iter(params)
+            jobs = {}
+            while(param_left):
+                for param in param_iter:
+                    job = executor.submit(self.send,param)
+                    jobs[job] = param
+                    if len(jobs) > scannerparam.threadnum:
+                        break
+                for job in futures.as_completed(jobs):
+                    param_left -= 1
+                    #result = job.result()
+                    del jobs[job]
+                    break
+
         time_end = time.time()
         print('执行结束，共花费{0}秒'.format(time_end - time_start))
         for x in self.open_ports:

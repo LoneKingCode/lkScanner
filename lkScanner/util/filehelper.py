@@ -12,6 +12,3 @@ class FileHelper(object):
     def append(filepath,content):
         with open(filepath, 'a+') as f:
             f.write(content)
-            f.close()
-
-

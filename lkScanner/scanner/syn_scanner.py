@@ -1,11 +1,12 @@
 from multiprocessing import Process, Queue
-from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
 from scapy.all import *
 import netaddr
 from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 from util.sqlhelper import SqlHelper
+import threading
 import sys
 import time
 import datetime
@@ -15,7 +16,7 @@ class SynScanner(object):
         #self.ifacestr = "Intel(R) Dual Band Wireless-AC 3160"
         self.sendcount = 0
         self.scannerparam = scannerparam
-        self.savepath =  FileHelper.get_save_path()
+        self.savepath = FileHelper.get_save_path()
         self.data_flag = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         if scannerparam.save:
             self.savepath = scannerparam.save
@@ -26,7 +27,7 @@ class SynScanner(object):
         if port in self.portlist:
             lock.acquire()
             FileHelper.append(self.savepath,ipinfo)
-            model = dict(ip=ip,port=port,flag=self.data_flag,createdatetime= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            model = dict(ip=ip,port=port,flag=self.data_flag,createdatetime= datetime.datetime.now())
             SqlHelper.add(model)
             lock.release()
             #self.open_ports.add({'ip':ip,'port':port})
@@ -72,8 +73,21 @@ class SynScanner(object):
         self.taskcount = len(params)
         print('ip总数:{0},待扫描任务总数:{1}'.format(len(iplist),self.taskcount))
 
-        with ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
-            results = executor.map(self.send,params)
+        with futures.ThreadPoolExecutor(max_workers=scannerparam.threadnum) as executor:
+            param_left = len(params)
+            param_iter = iter(params)
+            jobs = {}
+            while(param_left):
+                for param in param_iter:
+                    job = executor.submit(self.send,param)
+                    jobs[job] = param
+                    if len(jobs) > scannerparam.threadnum:
+                        break
+                for job in futures.as_completed(jobs):
+                    param_left -= 1
+                    #result = job.result()
+                    del jobs[job]
+                    break
 
         time_end = time.time()
         print('\n发送数据包结束，共花费{0}秒'.format(time_end - time_start))
@@ -85,12 +99,12 @@ class SynScanner(object):
         print('执行结束')
         p_listen.terminate()
 
-        if scannerparam.func:
-            print('开始执行{0}'.format(scannerparam.func))
+        if scannerparam.validator:
+            print('开始执行{0}'.format(scannerparam.validator))
             validate(scannerparam)
 
     def validate(self,scannerparam):
-        if 'proxy' in scannerparam.func:
+        if 'proxy' in scannerparam.validator:
             proxy_validator = ProxyValidator(self.data_flag)
             p_proxy = Process(target=proxy_validator.run)
             p_proxy.start()
