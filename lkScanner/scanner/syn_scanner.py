@@ -26,10 +26,13 @@ class SynScanner(object):
         ip = pkt.sprintf('%IP.src%')
         port = pkt.sprintf('%IP.sport%')
         info = '{0}:{1}'.format(ip,port)
-        if (port in self.portlist) and (info not in self.result):
+        fileipinfo =  '{0}:{1}\n'.format(ip,port)
+        #记得port要转换为整数
+        if (int(port) in self.portlist) and (info not in self.result):
+            print(2)
             self.result.add(info)
             lock.acquire()
-            FileHelper.append(self.savepath,ipinfo)
+            FileHelper.append(self.savepath,fileipinfo)
             model = dict(ip=ip,port=int(port),flag=self.data_flag,createdatetime= datetime.datetime.now())
             SqlHelper.add(model)
             lock.release()

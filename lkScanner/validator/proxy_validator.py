@@ -1,4 +1,3 @@
-
 import json
 import time
 import requests
@@ -57,8 +56,9 @@ class ProxyValidator(object):
                 LogHelper.error('同步数据到代理池失败')
             else:
                 text = response.text
-                LogHelper.debug('同步成功，服务器返回信息:' + text)
-                print('同步完成，服务器返回信息:' + text)
+                LogHelper.debug(text)
+                print('同步完成，服务器返回信息:',end='')
+                print(text)
 
     def check_proxy_and_save(self,ip,port):
         if self.proxy_valid(ip,port):
