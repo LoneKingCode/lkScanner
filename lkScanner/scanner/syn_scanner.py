@@ -29,7 +29,6 @@ class SynScanner(object):
         fileipinfo =  '{0}:{1}\n'.format(ip,port)
         #记得port要转换为整数
         if (int(port) in self.portlist) and (info not in self.result):
-            print(2)
             self.result.add(info)
             lock.acquire()
             FileHelper.append(self.savepath,fileipinfo)
