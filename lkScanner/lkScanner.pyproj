@@ -42,6 +42,7 @@
     <Compile Include="util\filehelper.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="util\loghelper.py" />
     <Compile Include="util\nethelper.py">
       <SubType>Code</SubType>
     </Compile>
@@ -63,7 +64,6 @@
     <Content Include="data\ip.txt" />
     <Content Include="data\password.dic" />
     <Content Include="data\port.txt" />
-    <Content Include="data\result.txt" />
     <Content Include="data\username.dic" />
     <Content Include="record.txt" />
     <Content Include="requirements.txt" />
@@ -71,6 +71,7 @@
   <ItemGroup>
     <Folder Include="data\" />
     <Folder Include="D:\MyProject\LoneKingCode\python\lkScanner\lkScanner\validator\" />
+    <Folder Include="log\" />
     <Folder Include="util\" />
     <Folder Include="scanner\" />
     <Folder Include="validator\" />

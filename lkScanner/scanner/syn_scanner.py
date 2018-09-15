@@ -6,6 +6,7 @@ from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
 from util.sqlhelper import SqlHelper
+from validator.proxy_validator import ProxyValidator
 import threading
 import sys
 import time
@@ -18,19 +19,21 @@ class SynScanner(object):
         self.scannerparam = scannerparam
         self.savepath = FileHelper.get_save_path()
         self.data_flag = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.result = set()
         if scannerparam.save:
             self.savepath = scannerparam.save
     def prn(self,pkt):
-        ipinfo = pkt.sprintf("%IP.src%:%IP.sport%\n")
         ip = pkt.sprintf('%IP.src%')
-        port = int(pkt.sprintf('%IP.sport%'))
-        if port in self.portlist:
+        port = pkt.sprintf('%IP.sport%')
+        info = '{0}:{1}'.format(ip,port)
+        if (port in self.portlist) and (info not in self.result):
+            self.result.add(info)
             lock.acquire()
             FileHelper.append(self.savepath,ipinfo)
-            model = dict(ip=ip,port=port,flag=self.data_flag,createdatetime= datetime.datetime.now())
+            model = dict(ip=ip,port=int(port),flag=self.data_flag,createdatetime= datetime.datetime.now())
             SqlHelper.add(model)
             lock.release()
-            #self.open_ports.add({'ip':ip,'port':port})
+            #print(info + ' open')
 
     def listen(self,portlist):
         self.portlist = portlist
@@ -100,9 +103,9 @@ class SynScanner(object):
         p_listen.terminate()
 
         if scannerparam.validator:
-            print('开始执行{0}'.format(scannerparam.validator))
-            validate(scannerparam)
-
+            print('开始执行{0}验证'.format(scannerparam.validator))
+            self.validate(scannerparam)
+        print('验证结束')
     def validate(self,scannerparam):
         if 'proxy' in scannerparam.validator:
             proxy_validator = ProxyValidator(self.data_flag)

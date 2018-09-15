@@ -3,17 +3,21 @@ import time
 import socket
 import os
 import sys
+from multiprocessing import Process
 from concurrent import futures
 from scanner.scanner_param import ScannerParam
 from util.nethelper import IpHelper,PortHelper
 from util.filehelper import FileHelper
-
+from util.sqlhelper import SqlHelper
+from validator.proxy_validator import ProxyValidator
+import datetime
 lock = threading.Lock()
 class ThreadScanner(object):
     def __init__(self,scannerparam):
         self.scancount = 0
         self.scannerparam = scannerparam
-        self.savepath =  FileHelper.get_save_path()
+        self.savepath = FileHelper.get_save_path()
+        self.data_flag = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         if scannerparam.save:
             self.savepath = scannerparam.save
     def scan(self,param):
@@ -26,6 +30,8 @@ class ThreadScanner(object):
             ipinfo = '{0}:{1}\n'.format(ip,port)
             lock.acquire()
             FileHelper.append(self.savepath,ipinfo)
+            model = dict(ip=ip,port=int(port),flag=self.data_flag,createdatetime= datetime.datetime.now())
+            row_affect=  SqlHelper.add(model)
             lock.release()
             s.close()
         except socket.timeout as e:
@@ -34,7 +40,6 @@ class ThreadScanner(object):
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((ip, port))
                 #print('{0}:{1} open'.format(ip,port))
-                self.open_ports.add({'ip':ip,'port':port})
                 s.close()
             except Exception as e:
                 s.close()
@@ -67,7 +72,7 @@ class ThreadScanner(object):
             jobs = {}
             while(param_left):
                 for param in param_iter:
-                    job = executor.submit(self.send,param)
+                    job = executor.submit(self.scan,param)
                     jobs[job] = param
                     if len(jobs) > scannerparam.threadnum:
                         break
@@ -78,9 +83,18 @@ class ThreadScanner(object):
                     break
 
         time_end = time.time()
-        print('执行结束，共花费{0}秒'.format(time_end - time_start))
-        for x in self.open_ports:
-            print("{0}:{1} open \n".format(x['ip'],x['port']))
+        print('扫描结束，共花费{0}秒'.format(time_end - time_start))
+        if scannerparam.validator:
+            print('开始执行{0}验证'.format(scannerparam.validator))
+            self.validate(scannerparam)
+        print('验证结束')
+
+    def validate(self,scannerparam):
+        if 'proxy' in scannerparam.validator:
+            proxy_validator = ProxyValidator(self.data_flag)
+            p_proxy = Process(target=proxy_validator.run)
+            p_proxy.start()
+            p_proxy.join()
 
 def run_thread_scanner(scannerparam):
     t_scanner = ThreadScanner(scannerparam)

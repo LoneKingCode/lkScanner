@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import datetime
 import os
 import json
-
+import config
 BaseModel = declarative_base()
 
 class Scanner(BaseModel):
@@ -16,11 +16,8 @@ class Scanner(BaseModel):
     flag = Column(String(30)) #这个作用标识每次扫描的结果
     createdatetime = Column(DateTime(), default=datetime.datetime.utcnow)
 
-
-#项目路径
-BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 #sqlite数据库文件位置
-DATABASE_PATH = os.path.join(BASE_DIR, 'data/data.db')
+DATABASE_PATH = os.path.join(config.BASE_DIR, 'data/data.db')
 # 初始化数据库连接:
 engine = create_engine('sqlite:///' + DATABASE_PATH, echo=False, connect_args={'check_same_thread': False})
 # 创建DBSession类型:
@@ -93,7 +90,7 @@ WHERE rowid IN \
             for key in list(conditions.keys()):
                 if(SqlHelper.params.get(key,None)):
                     conditionlist.append(SqlHelper.params.get(key) == conditions.get(key))
-        query = session.query(Scanner).order_by(Scanner.score.desc())
+        query = session.query(Scanner).order_by(Scanner.id.desc())
         for c in conditionlist:
             query = query.filter(c)
         if count:
