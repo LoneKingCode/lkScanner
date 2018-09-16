@@ -4,7 +4,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__)) #项目路径
 
 ####################################### 检测proxy的配置 #########################################
 #代理池API服务器地址 用于同步扫描结果
-API_SERVER_URL = 'http://127.0.0.1:8000/importdata'
+API_SERVER_URL = 'http://los.lk1.cc:8000/importdata'
 #发送的数据格式 这个为list中每一个项的格式 会发送json格式数据到api服务器
 PROXY_DATA_TEMPLATE='{ip}:{port}'
 #连接超时

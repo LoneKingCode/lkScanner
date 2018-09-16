@@ -33,10 +33,14 @@
     <Compile Include="scanner\coroutine_scanner.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="scanner\syn_scanner_coroutine.py" />
     <Compile Include="scanner\thread_scanner.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scanner\syn_scanner.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scanner\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="util\filehelper.py">
@@ -47,6 +51,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="util\sqlhelper.py" />
+    <Compile Include="util\__init__.py" />
     <Compile Include="validator\ftp_validator.py">
       <SubType>Code</SubType>
     </Compile>
@@ -59,6 +64,7 @@
     <Compile Include="validator\proxy_validator.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="validator\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\ip.txt" />

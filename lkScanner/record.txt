@@ -2,8 +2,6 @@ scan.py -c tcp -save data/result.txt
 scan.py -c tcp -r t -tn 512 -t 5 -ifile data/ip.txt -pfile data/port.txt -save result.txt
 scan.py -c tcp -r c -tn 512 -t 5 -ifile data/ip.txt -pfile data/port.txt -save result.txt
 scan.py -c syn -tn 512 -t 5 -ifile data/ip.txt -pfile data/port.txt -save result.txt
-参数 保存文件等
 
 
-流程:
-	扫描-》入库-》去重复-》存入文件啊
+验证的有效代理也再单独保存一份文件 or 数据库
