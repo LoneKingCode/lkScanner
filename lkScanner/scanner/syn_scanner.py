@@ -22,6 +22,7 @@ class SynScanner(object):
         self.result = set()
         if scannerparam.save:
             self.savepath = scannerparam.save
+
     def prn(self,pkt):
         ip = pkt.sprintf('%IP.src%')
         port = pkt.sprintf('%IP.sport%')
@@ -96,8 +97,6 @@ class SynScanner(object):
 
         time_end = time.time()
         print('\n发送数据包结束，共花费{0}秒'.format(time_end - time_start))
-        #for x in self.open_ports:
-        #    print("{0}:{1} open \n".format(x['ip'],x['port']))
 
         print('等待20秒结束监听进程')
         time.sleep(20)
@@ -115,7 +114,6 @@ class SynScanner(object):
             p_proxy = Process(target=proxy_validator.run)
             p_proxy.start()
             p_proxy.join()
-
 
 def run_syn_scanner(scannerparam):
     syn_scanner = SynScanner(scannerparam)
